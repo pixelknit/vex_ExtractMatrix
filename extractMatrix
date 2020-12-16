@@ -1,0 +1,43 @@
+//first unpack the geo andd keet just point 0, in the first wrangle add this pt0 to 1 input and all the rest in input 2(1)
+@N = normalize(point(1,'P',1) - @P);
+int pt = 2;
+vector tv;
+int npts = npoints(1) -1;
+float col_tr = ch('collinear');
+
+
+for (int i=pt; i<npts;i++)
+{
+    tv = normalize(point(1,'P',i) - @P);
+    if ( 1 - abs(dot(@N,tv)) > col_tr)
+    {
+        v@up = normalize(cross(@N,tv)); 
+        i@pt = i;
+        break;
+    }
+    
+}
+
+//create a rest on the first frame of the anim geo (timeshift)
+//this goes on the 1 input of the next wrangle, create another rest for the previous wrangle on the first anim frame, this goes in the second input and finally the anim previous wrangle goes in the 3 input
+
+//rest
+vector rest_N = point(1, 'N', 0);
+vector rest_up = point(1, 'up', 0);
+vector rest_P = point(1, 'P', 0);
+
+matrix rest_m = lookat({0,0,0},rest_N, rest_up);
+translate(rest_m, rest_P);
+
+//anim
+vector anim_N = point(2, 'N', 0);
+vector anim_up = point(2, 'up', 0);
+vector anim_P = point(2, 'P', 0);
+
+matrix anim_m = lookat({0,0,0},anim_N, anim_up);
+translate(anim_m, anim_P);
+
+rest_m = invert(rest_m);
+matrix M = rest_m * anim_m;
+
+@P *= M;
